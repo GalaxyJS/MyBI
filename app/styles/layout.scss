@@ -1,0 +1,52 @@
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+* {
+  font-family: 'Montserrat', sans-serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-size: 14px;
+}
+
+body {
+  //background: #444;
+  //background: repeat center/260px 260px url('/assets/images/black-orchid.png'), linear-gradient(135deg, #605f5c 0%, #444 65%);
+  background: repeat center/260px 260px url('/assets/images/black-orchid.png');
+}
+
+#app {
+  display: block;
+  padding-top: 65px;
+  overflow: hidden;
+
+  > header {
+    position: absolute;
+    display: block;
+    background: repeat center/260px 260px url('/assets/images/black-orchid.png'), #fff;
+    height: 65px;
+    box-shadow: 0 0 25px rgba(#333, .2);
+    width: 100%;
+    top: 0;
+  }
+
+  > nav {
+
+    //background-color: rgba(#000, .2);
+    //background: repeat center/260px 260px url('/assets/images/black-orchid.png'), #f53f3b;
+    //box-shadow: 0 0 25px rgba(#333, .18);
+    //display: inline-block;
+    //width: 300px;
+    //height: 100%;
+  }
+
+  > main {
+    display: block;
+    width: 100%;
+    min-height: 100%;
+    overflow: auto;
+  }
+}
