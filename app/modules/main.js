@@ -18,6 +18,32 @@ router.init({
   '/': function () {
     Scope.data.activeSectionNode = null;
   },
+  '/:domain/login': function (params) {
+    console.log(params);
+    debugger;
+    // Scope.data.activeSectionId = params.sectionId;
+    //
+    // const activeSection = Scope.data.sections.filter(function (item) {
+    //   return item.id === Scope.data.activeSectionId;
+    // })[0];
+    //
+    // Scope.data.activeModule = activeSection ? activeSection.module || null : null;
+  },
+  '/:domain': function (params) {
+    console.log(params);
+    // router;
+    // debugger;
+    router.navigateFromHere(params.domain + '/login');
+    // debugger;
+
+    // Scope.data.activeSectionId = params.sectionId;
+    //
+    // const activeSection = Scope.data.sections.filter(function (item) {
+    //   return item.id === Scope.data.activeSectionId;
+    // })[0];
+    //
+    // Scope.data.activeModule = activeSection ? activeSection.module || null : null;
+  },
   '/:sectionId': function (params) {
     console.log(params);
     Scope.data.activeSectionId = params.sectionId;
@@ -84,12 +110,14 @@ view.init([
               left: [
                 'data.activeSectionNode',
                 function (node) {
-                  if (!node) return '50%';
+                  if (!node) {
+                    return '50%';
+                  }
 
                   const promise = new Promise((resolve) => {
                     this.rendered.then(() => {
                       requestAnimationFrame(() => {
-                        resolve(node.offsetLeft + 'px');
+                        resolve(node.getBoundingClientRect().left + 'px');
                       });
                     });
                   });
@@ -107,7 +135,7 @@ view.init([
                   const promise = new Promise((resolve) => {
                     this.rendered.then(() => {
                       requestAnimationFrame(() => {
-                        resolve(node.offsetWidth + 'px');
+                        resolve(node.getBoundingClientRect().width + 'px');
                       });
                     });
                   });
@@ -165,5 +193,5 @@ view.init([
       id: 'login',
       url: 'modules/auth/login-form.js'
     }
-  },
+  }
 ]);

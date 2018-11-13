@@ -6869,6 +6869,7 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
           _this.oldResolveId[dynamicRoute.id] = resolveId;
           _this.routes[dynamicRoute.id].call(null, params);
           parentRoute = dynamicRoute;
+          break;
         }
       }
 
