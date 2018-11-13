@@ -1,0 +1,95 @@
+.section-content {
+  max-width: 1000px;
+  margin: 45px auto;
+
+  > header {
+    background-color: #fafafa;
+    border-radius: 18px;
+    min-height: 70px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+
+    > h2 {
+      font-size: 1.5em;
+      color: #777;
+      line-height: 20px;
+      font-weight: 400;
+      display: inline-block;
+      flex: 1 0 auto;
+    }
+
+    > div {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      flex: 1 0 auto;
+      align-items: flex-start;
+    }
+  }
+}
+
+.overlay {
+  position: fixed;
+  z-index: 10;
+  background-color: rgba(#000, .23);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  background-color: #fff;
+  width: 400px;
+  height: 400px;
+  padding: 20px 20px;
+  left: calc(50% - 200px);
+  top: calc(50% - 200px);
+  position: absolute;
+
+  > header {
+    text-align: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #444;
+  }
+
+  > main {
+    flex: 1 0 auto;
+    padding: 15px 0 25px;
+  }
+
+  > footer {
+    padding: 25px 0 25px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.field {
+  display: block;
+  color: #444;
+  position: relative;
+
+  & + .field {
+    margin-top: 15px;
+  }
+
+  > span {
+    color: #999;
+    display: block;
+    padding: 0 0 10px;
+    line-height: 16px;
+    font-weight: normal;
+  }
+
+  > input, select, textarea {
+    color: #444;
+  }
+}

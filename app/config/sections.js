@@ -14,5 +14,13 @@ Scope.exports = [
   {
     id: 'users',
     link: '#/users'
-  }
+  },
+  // {
+  //   id: 'login',
+  //   link: '#/login',
+  //   module: {
+  //     id: 'login',
+  //     url: 'modules/auth/login-form.js'
+  //   }
+  // }
 ];

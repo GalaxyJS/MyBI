@@ -4,14 +4,19 @@
 const view = Scope.import('galaxy/view');
 const router = Scope.import('galaxy/router');
 
+const animations = Scope.import('config/animations.js');
+
 Scope.data.sections = Scope.import('config/sections.js');
 
-Scope.data.activeSectionId = 'clients';
+Scope.data.authService = Scope.import('services/auth.js');
+
+Scope.data.activeSectionId = null;
 Scope.data.activeModule = null;
+Scope.data.notLoggedIn = true;
 
 router.init({
   '/': function () {
-
+    Scope.data.activeSectionNode = null;
   },
   '/:sectionId': function (params) {
     console.log(params);
@@ -26,7 +31,13 @@ router.init({
 });
 
 const isActiveSection = function (id, activeSectionId) {
-  return id === activeSectionId;
+  const isActive = id === activeSectionId;
+
+  if (isActive) {
+    Scope.data.activeSectionNode = this.node;
+  }
+
+  return isActive;
 };
 isActiveSection.watch = ['section.id', 'data.activeSectionId'];
 
@@ -65,6 +76,46 @@ view.init([
                 section: '<>section'
               }
             }
+          },
+          {
+            tag: 'span',
+            class: 'active-menu-indicator',
+            style: {
+              left: [
+                'data.activeSectionNode',
+                function (node) {
+                  if (!node) return '50%';
+
+                  const promise = new Promise((resolve) => {
+                    this.rendered.then(() => {
+                      requestAnimationFrame(() => {
+                        resolve(node.offsetLeft + 'px');
+                      });
+                    });
+                  });
+
+                  return promise;
+                }
+              ],
+              width: [
+                'data.activeSectionNode',
+                function (node) {
+                  if (!node) {
+                    return 0;
+                  }
+
+                  const promise = new Promise((resolve) => {
+                    this.rendered.then(() => {
+                      requestAnimationFrame(() => {
+                        resolve(node.offsetWidth + 'px');
+                      });
+                    });
+                  });
+
+                  return promise;
+                }
+              ]
+            }
           }
         ]
       },
@@ -76,6 +127,43 @@ view.init([
   {
     tag: 'main',
 
-    module: '<>data.activeModule'
-  }
+    children: [
+      {
+        tag: 'section',
+        module: '<>data.activeModule'
+      },
+      {
+        animations: {
+          '-=login': {
+            duration: .5
+          }
+        },
+        tag: 'footer',
+        class: {
+          // login: '<>data.notLoggedIn'
+        },
+        children: [
+          {
+            tag: 'button',
+            text: 'press',
+            on: {
+              click: function () {
+                Scope.data.notLoggedIn = false;
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    animations: animations.overlay,
+    tag: 'section',
+    class: 'overlay',
+    $if: '<>data.authService.notLoggedIn',
+    module: {
+      id: 'login',
+      url: 'modules/auth/login-form.js'
+    }
+  },
 ]);
