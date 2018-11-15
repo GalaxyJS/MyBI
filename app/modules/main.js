@@ -12,19 +12,37 @@ Scope.data.authService = Scope.import('services/auth.js');
 
 Scope.data.activeSectionId = null;
 Scope.data.activeModule = null;
-Scope.data.notLoggedIn = true;
+
+Scope.data.popup = null;
 
 router.init({
   '/': function () {
     Scope.data.activeSectionNode = null;
     debugger;
   },
+
+  '/:domain': function (params) {
+    console.log('domain');
+    if (Scope.data.authService.notLoggedIn) {
+      router.navigate(params.domain + '/login');
+    } else {
+      Scope.data.popup = null;
+      router.navigate(params.domain + '/dashboard');
+    }
+    debugger;
+  },
+
   '/:domain/login': function (params) {
     console.log('domain/login', params);
-    // debugger;
+    Scope.data.popup = {
+      id: 'login',
+      url: 'modules/auth/login-form.js'
+    };
+    debugger;
   },
   '/:domain/:sectionId': function (params) {
-    console.log(params);
+    console.log('sections', params);
+    debugger;
     Scope.data.activeSectionId = params.sectionId;
 
     const activeSection = Scope.data.sections.filter(function (item) {
@@ -32,21 +50,6 @@ router.init({
     })[0];
 
     Scope.data.activeModule = activeSection ? activeSection.module || null : null;
-  },
-  '/:domain': function (params) {
-    console.log('domain', params);
-
-    // Todo: If user is logged in go to default section
-    // Todo: If user is not logged in go to /login route
-    // router.navigateFromHere(params.domain + '/login');
-
-    // Scope.data.activeSectionId = params.sectionId;
-    //
-    // const activeSection = Scope.data.sections.filter(function (item) {
-    //   return item.id === Scope.data.activeSectionId;
-    // })[0];
-    //
-    // Scope.data.activeModule = activeSection ? activeSection.module || null : null;
   }
 });
 
@@ -162,7 +165,7 @@ view.init([
         },
         tag: 'footer',
         class: {
-          // login: '<>data.notLoggedIn'
+          // login: ''
         },
         children: [
           {
@@ -170,7 +173,6 @@ view.init([
             text: 'press',
             on: {
               click: function () {
-                Scope.data.notLoggedIn = false;
               }
             }
           }
@@ -182,10 +184,7 @@ view.init([
     animations: animations.overlay,
     tag: 'section',
     class: 'overlay',
-    $if: '<>data.authService.notLoggedIn',
-    module: {
-      id: 'login',
-      url: 'modules/auth/login-form.js'
-    }
+    $if: '<>data.popup',
+    module: '<>data.popup'
   }
 ]);

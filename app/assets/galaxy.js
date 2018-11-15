@@ -6246,6 +6246,54 @@ Galaxy.View.ViewNode = /** @class */ (function (GV) {
 
 
 /* global Galaxy */
+'use strict';
+
+(function (GV) {
+  GV.NODE_SCHEMA_PROPERTY_MAP['inputs'] = {
+    type: 'reactive',
+    name: 'inputs'
+  };
+
+  GV.REACTIVE_BEHAVIORS['inputs'] = {
+    regex: null,
+    /**
+     *
+     * @this {Galaxy.View.ViewNode}
+     * @param matches
+     * @param scope
+     */
+    prepare: function (matches, scope) {
+      if (matches !== null && typeof  matches !== 'object') {
+        throw console.error('inputs property should be an object with explicits keys:\n', JSON.stringify(this.schema, null, '  '));
+      }
+
+      return {
+        subjects: matches,
+        scope: scope
+      };
+    },
+    /**
+     *
+     * @this {Galaxy.View.ViewNode}
+     * @param data
+     * @return {boolean}
+     */
+    install: function (data) {
+      if (this.virtual) {
+        return;
+      }
+
+      const reactive = GV.bindSubjectsToData(this, data.subjects, data.scope, true);
+
+      this.inputs = reactive;
+
+      return false;
+    },
+    apply: function (cache, value, oldValue, context) { }
+  };
+})(Galaxy.View);
+
+/* global Galaxy */
 
 (function (Galaxy) {
   Galaxy.View.NODE_SCHEMA_PROPERTY_MAP['module'] = {
@@ -6695,65 +6743,20 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
 /* global Galaxy */
 'use strict';
 
-(function (GV) {
-  GV.NODE_SCHEMA_PROPERTY_MAP['inputs'] = {
-    type: 'reactive',
-    name: 'inputs'
-  };
-
-  GV.REACTIVE_BEHAVIORS['inputs'] = {
-    regex: null,
-    /**
-     *
-     * @this {Galaxy.View.ViewNode}
-     * @param matches
-     * @param scope
-     */
-    prepare: function (matches, scope) {
-      if (matches !== null && typeof  matches !== 'object') {
-        throw console.error('inputs property should be an object with explicits keys:\n', JSON.stringify(this.schema, null, '  '));
-      }
-
-      return {
-        subjects: matches,
-        scope: scope
-      };
-    },
-    /**
-     *
-     * @this {Galaxy.View.ViewNode}
-     * @param data
-     * @return {boolean}
-     */
-    install: function (data) {
-      if (this.virtual) {
-        return;
-      }
-
-      const reactive = GV.bindSubjectsToData(this, data.subjects, data.scope, true);
-
-      this.inputs = reactive;
-
-      return false;
-    },
-    apply: function (cache, value, oldValue, context) { }
-  };
-
-  Galaxy.registerAddOnProvider('galaxy/inputs', function (scope) {
+(function (G) {
+  G.registerAddOnProvider('galaxy/inputs', function (scope) {
     return {
       /**
        *
        * @return {*}
        */
       create: function () {
-        // scope.inputs = scope.element.cache.inputs.reactive;
-        // scope.inputs = scope.element.inputs;
         return scope.inputs;
       },
       finalize: function () { }
     };
   });
-})(Galaxy.View);
+})(Galaxy);
 
 (function (G) {
   'use strict';
@@ -6771,7 +6774,9 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
     this.root = module.id === 'system' ? '#' : module.systemId.replace('system/', '#/');
     this.oldURL = '';
     this.oldResolveId = {};
-    this.routes = null;
+    this.routes = [];
+    this.routesMap = null;
+    this.dirty = false;
 
     Object.defineProperty(this, 'urlParts', {
       get: function () {
@@ -6783,7 +6788,21 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
 
   SimpleRouter.prototype = {
     init: function (routes) {
-      this.routes = routes;
+      this.routesMap = routes;
+
+      const routePaths = Object.keys(routes);
+      for (let i = 0, len = routePaths.length; i < len; i++) {
+        if (routePaths[i].indexOf('/') !== 0) {
+          throw new Error('The route `' + routePaths[i] + '` is not valid because it does not begin with `/`.\n' +
+            'Please change it to `/' + routePaths[i] + '` and make sure that all of your routes start with `/`.\n');
+        }
+
+        this.routes.push({
+          path: routePaths[i],
+          act: routes[routePaths[i]]
+        });
+      }
+
       this.listener = this.detect.bind(this);
       window.addEventListener('hashchange', this.listener);
       this.detect();
@@ -6795,6 +6814,7 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
         path = '/' + path;
       }
 
+      this.dirty = true;
       window.location.hash = path;
     },
 
@@ -6829,19 +6849,24 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
       return normalizedHash.replace(_this.root, '') || '/';
     },
 
-    callMatchRoute: function (hash) {
+    callMatchRoute: function (routes, hash) {
       const _this = this;
       const path = _this.normalizeHash(hash);
-      const routesPath = Object.keys(_this.routes);
+      const routesPath = routes.map(function (item) {
+        return item.path;
+      });
+      debugger;
 
       // Hard match
-      if (routesPath.indexOf(path) !== -1) {
+      const routeIndex = routesPath.indexOf(path);
+      if (routeIndex !== -1) {
         // delete all old resolved ids
         _this.oldResolveId = {};
-        return _this.routes[path].call(null);
+        return routes[routeIndex].call(null);
       }
 
       const dynamicRoutes = _this.extractDynamicRoutes(routesPath);
+      let depth = 0;
       let parentRoute;
       let matchCount = 0;
       for (let i = 0, len = dynamicRoutes.length; i < len; i++) {
@@ -6856,9 +6881,18 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
 
         if (parentRoute) {
           const match = parentRoute.paramFinderExpression.exec(path);
-          if (!match) {
+
+          if (!match || depth >= path.split('/').length) {
             continue;
           }
+        }
+
+        if (_this.dirty) {
+          Object.keys(_this.routes);
+
+          this.dirty = false;
+          this.callMatchRoute(routes, window.location.hash);
+          break;
         }
 
         const params = _this.createParamValueMap(dynamicRoute.paramNames, match.slice(1));
@@ -6867,14 +6901,23 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
         if (_this.oldResolveId[dynamicRoute.id] !== resolveId) {
           _this.oldResolveId = {};
           _this.oldResolveId[dynamicRoute.id] = resolveId;
-          _this.routes[dynamicRoute.id].call(null, params);
+          // _this.callRoute(routes[dynamicRoute.id], params);
+
+          _this.routesMap[dynamicRoute.id].call(null, params);
           parentRoute = dynamicRoute;
-          break;
+          depth = dynamicRoute.id.split('/').length;
         }
       }
 
       if (matchCount === 0) {
         console.warn('No associated route has been found');
+      }
+    },
+
+    callRoute: function (route, params) {
+      if (route instanceof Object) {
+      } else {
+        route.call(null, params);
       }
     },
 
@@ -6916,7 +6959,7 @@ Galaxy.View.PROPERTY_SETTERS.prop = function (viewNode, attrName, property, expr
       if (hash.indexOf(this.root) === 0) {
         if (hash !== this.oldURL) {
           this.oldURL = hash;
-          this.callMatchRoute(hash);
+          this.callMatchRoute(this.routes, hash);
         }
       }
     },
