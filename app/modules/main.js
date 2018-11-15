@@ -17,34 +17,13 @@ Scope.data.notLoggedIn = true;
 router.init({
   '/': function () {
     Scope.data.activeSectionNode = null;
+    debugger;
   },
   '/:domain/login': function (params) {
-    console.log(params);
-    debugger;
-    // Scope.data.activeSectionId = params.sectionId;
-    //
-    // const activeSection = Scope.data.sections.filter(function (item) {
-    //   return item.id === Scope.data.activeSectionId;
-    // })[0];
-    //
-    // Scope.data.activeModule = activeSection ? activeSection.module || null : null;
-  },
-  '/:domain': function (params) {
-    console.log(params);
-    // router;
+    console.log('domain/login', params);
     // debugger;
-    router.navigateFromHere(params.domain + '/login');
-    // debugger;
-
-    // Scope.data.activeSectionId = params.sectionId;
-    //
-    // const activeSection = Scope.data.sections.filter(function (item) {
-    //   return item.id === Scope.data.activeSectionId;
-    // })[0];
-    //
-    // Scope.data.activeModule = activeSection ? activeSection.module || null : null;
   },
-  '/:sectionId': function (params) {
+  '/:domain/:sectionId': function (params) {
     console.log(params);
     Scope.data.activeSectionId = params.sectionId;
 
@@ -53,6 +32,21 @@ router.init({
     })[0];
 
     Scope.data.activeModule = activeSection ? activeSection.module || null : null;
+  },
+  '/:domain': function (params) {
+    console.log('domain', params);
+
+    // Todo: If user is logged in go to default section
+    // Todo: If user is not logged in go to /login route
+    // router.navigateFromHere(params.domain + '/login');
+
+    // Scope.data.activeSectionId = params.sectionId;
+    //
+    // const activeSection = Scope.data.sections.filter(function (item) {
+    //   return item.id === Scope.data.activeSectionId;
+    // })[0];
+    //
+    // Scope.data.activeModule = activeSection ? activeSection.module || null : null;
   }
 });
 

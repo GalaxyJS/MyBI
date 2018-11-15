@@ -1,11 +1,11 @@
 Scope.exports = [
   {
     id: 'dashboard',
-    link: '#/dashboard'
+    link: '#/mybit/dashboard'
   },
   {
     id: 'clients',
-    link: '#/clients',
+    link: '#/mybit/clients',
     module: {
       id: 'clients',
       url: 'modules/domains/overview.js'
@@ -13,7 +13,7 @@ Scope.exports = [
   },
   {
     id: 'users',
-    link: '#/users'
+    link: '#/mybit/users'
   },
   // {
   //   id: 'login',
