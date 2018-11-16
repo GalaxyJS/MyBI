@@ -15,41 +15,88 @@ Scope.data.activeModule = null;
 
 Scope.data.popup = null;
 
+// router.init({
+//   '/': function () {
+//     Scope.data.activeSectionNode = null;
+//     debugger;
+//   },
+//
+//   '/:domain': function (params) {
+//     console.log('domain');
+//     if (Scope.data.authService.notLoggedIn) {
+//       router.navigate(params.domain + '/login');
+//     } else {
+//       Scope.data.popup = null;
+//       router.navigate(params.domain + '/dashboard');
+//     }
+//     debugger;
+//   },
+//
+//   '/:domain/login': function (params) {
+//     console.log('domain/login', params);
+//     Scope.data.popup = {
+//       id: 'login',
+//       url: 'modules/auth/login-form.js'
+//     };
+//     debugger;
+//   },
+//   '/:domain/:sectionId': function (params) {
+//     console.log('sections', params);
+//     debugger;
+//     Scope.data.activeSectionId = params.sectionId;
+//
+//     const activeSection = Scope.data.sections.filter(function (item) {
+//       return item.id === Scope.data.activeSectionId;
+//     })[0];
+//
+//     Scope.data.activeModule = activeSection ? activeSection.module || null : null;
+//   }
+// });
+
 router.init({
   '/': function () {
     Scope.data.activeSectionNode = null;
-    debugger;
+    // debugger;
   },
 
-  '/:domain': function (params) {
-    console.log('domain');
-    if (Scope.data.authService.notLoggedIn) {
+  '/:domain': {
+    '/': function (params) {
+      console.log('domain');
       router.navigate(params.domain + '/login');
-    } else {
-      Scope.data.popup = null;
-      router.navigate(params.domain + '/dashboard');
+      // debugger;
+    },
+
+    '/login': function (params) {
+      console.log('domain/login', params);
+      if (Scope.data.authService.notLoggedIn) {
+        Scope.data.popup = {
+          id: 'login',
+          url: 'modules/auth/login-form.js'
+        };
+        console.log('popup',Scope.data.popup);
+        // debugger;
+      } else {
+        Scope.data.popup = null;
+        router.navigate(params.domain + '/dashboard');
+      }
+      // debugger;
+    },
+
+    '/:sectionId': function (params, parentParams) {
+      if (Scope.data.authService.notLoggedIn) {
+        return router.navigate(parentParams.domain + '/login');
+      }
+      // debugger;
+
+
+      Scope.data.activeSectionId = params.sectionId;
+
+      const activeSection = Scope.data.sections.filter(function (item) {
+        return item.id === Scope.data.activeSectionId;
+      })[0];
+
+      Scope.data.activeModule = activeSection ? activeSection.module || null : null;
     }
-    debugger;
-  },
-
-  '/:domain/login': function (params) {
-    console.log('domain/login', params);
-    Scope.data.popup = {
-      id: 'login',
-      url: 'modules/auth/login-form.js'
-    };
-    debugger;
-  },
-  '/:domain/:sectionId': function (params) {
-    console.log('sections', params);
-    debugger;
-    Scope.data.activeSectionId = params.sectionId;
-
-    const activeSection = Scope.data.sections.filter(function (item) {
-      return item.id === Scope.data.activeSectionId;
-    })[0];
-
-    Scope.data.activeModule = activeSection ? activeSection.module || null : null;
   }
 });
 
