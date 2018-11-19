@@ -27,23 +27,52 @@ Scope.exports = {
       duration: .2
     }
   },
+  menuItem: {
+    enter: {
+      sequence: 'menu-items',
+      from: {
+        y: '-100%'
+      },
+      position: '-=.15',
+      duration: .3
+    }
+  },
+  logout: {
+    enter: {
+      sequence: 'logout',
+      startAfter: 'menu-items',
+      from: {
+        x: '100%',
+        opacity: 0
+      },
+      duration: .3
+    }
+  },
   login: {
     enter: {
       from: {
         scale: .2,
         opacity: 0
       },
+
       duration: .3
     },
-
+    leave: {
+      to: {
+        y: 20,
+        opacity: 0
+      },
+      duration: .3
+    },
   },
   overlay: {
     leave: {
       to: {
-        scale: 1.7,
-        opacity: 0
+        // scale: .7,
+        opacity: 0,
+        clearProps: 'all'
       },
-      duration: .3
+      duration: .5
     }
   }
 };

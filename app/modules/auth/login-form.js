@@ -1,3 +1,4 @@
+const router = Scope.import('galaxy/router');
 const view = Scope.import('galaxy/view');
 
 const animations = Scope.import('config/animations.js');
@@ -5,15 +6,26 @@ const animations = Scope.import('config/animations.js');
 const authService = Scope.import('services/auth.js');
 const uiBuilder = Scope.import('services/ui-builder.js');
 
+const notificationCenter = Scope.import('services/notification.js').get();
+
 Scope.data.form = {
+  domain: Scope.inputs.domain,
   username: null,
   password: null
 };
 
 view.init({
   animations: animations.login,
-  tag: 'article',
+  tag: 'form',
   class: 'login',
+  action: 'auth/login',
+  method: 'POST',
+  on: {
+    submit(event) {
+      event.preventDefault();
+      return false;
+    }
+  },
   children: [
     {
       tag: 'header',
@@ -22,7 +34,6 @@ view.init({
           tag: 'h2',
           text: 'Login'
         }
-
       ]
     },
     {
@@ -37,10 +48,22 @@ view.init({
       children: [
         {
           tag: 'button',
+          type: 'submit',
           text: 'Log in',
           on: {
             click() {
-              authService.login();
+              // Business logic
+              authService.login(Scope.data.form)
+                .then(() => {
+                  router.navigate('/mybit');
+                  notificationCenter.show('You have been logged in successfully!', 'success');
+                })
+                .catch((response) => {
+                  notificationCenter.show('Something went wrong!', 'error');
+                });
+
+              // Show case notification center
+              // notificationCenter.show('Something went wrong!', 'error');
             }
           }
         }

@@ -35,7 +35,6 @@ h2 {
     background-color: rgba(#fff, .5);
     position: absolute;
     box-shadow: 0 8px 25px rgba(#000, .03);
-    //border-bottom: 2px solid #f53f3b;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -45,19 +44,20 @@ h2 {
     top: 0;
     z-index: 2;
 
-    > .logo {
-      max-width: 170px;
-      max-height: 45px;
-      display: block;
-      margin: 0 45px;
-    }
-
     > section {
       flex: 1 0 auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      &:first-child {
+        max-width: 300px;
+      }
 
       &:last-child {
-        max-width: 170px;
-        margin: 0 45px;
+        max-width: 300px;
+        justify-content: flex-end;
       }
     }
   }
@@ -95,44 +95,5 @@ h2 {
     display: inline-block;
     margin: 0;
     padding: 0;
-  }
-
-  a {
-    font-size: 1em;
-    color: #f53f3b;
-    font-weight: 600;
-    display: block;
-    line-height: 20px;
-    padding: 24px 10px 20px;
-    margin: 0 10px;
-    text-decoration: none;
-    text-transform: uppercase;
-    text-align: center;
-    opacity: .9;
-    transition: all .1s linear;
-
-    &:hover {
-      background-color: rgba(#fff, .9);
-    }
-
-    &.active {
-      color: #f53f3b;
-      opacity: 1;
-      //padding-bottom: 18px;
-      //border-bottom: 6px solid #f53f3b;
-      text-shadow: 0 1px 5px rgba(#f53f3b, .3);
-    }
-  }
-
-  .active-menu-indicator {
-    background-color: #f53f3b;
-    box-shadow: 0 2px 16px rgba(#f53f3b, .5);
-    position: fixed;
-    height: 6px;
-    border-radius: 3px;
-    width: 0;
-    top: 62px;
-    left: 0;
-    transition: all .2s ease-in-out;
   }
 }

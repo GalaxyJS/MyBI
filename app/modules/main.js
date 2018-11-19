@@ -5,94 +5,65 @@ const view = Scope.import('galaxy/view');
 const router = Scope.import('galaxy/router');
 
 const animations = Scope.import('config/animations.js');
+const activeMenuIndicator = Scope.import('components/active-menu-indicator.js');
 
-Scope.data.sections = Scope.import('config/sections.js');
+const notification = Scope.import('services/notification.js');
+const notificationCenter = notification.get();
 
 Scope.data.authService = Scope.import('services/auth.js');
 
-Scope.data.activeSectionId = null;
+Scope.data.activeMenuItemId = null;
 Scope.data.activeModule = null;
+Scope.data.currentDomain = null;
 
 Scope.data.popup = null;
 
-// router.init({
-//   '/': function () {
-//     Scope.data.activeSectionNode = null;
-//     debugger;
-//   },
-//
-//   '/:domain': function (params) {
-//     console.log('domain');
-//     if (Scope.data.authService.notLoggedIn) {
-//       router.navigate(params.domain + '/login');
-//     } else {
-//       Scope.data.popup = null;
-//       router.navigate(params.domain + '/dashboard');
-//     }
-//     debugger;
-//   },
-//
-//   '/:domain/login': function (params) {
-//     console.log('domain/login', params);
-//     Scope.data.popup = {
-//       id: 'login',
-//       url: 'modules/auth/login-form.js'
-//     };
-//     debugger;
-//   },
-//   '/:domain/:sectionId': function (params) {
-//     console.log('sections', params);
-//     debugger;
-//     Scope.data.activeSectionId = params.sectionId;
-//
-//     const activeSection = Scope.data.sections.filter(function (item) {
-//       return item.id === Scope.data.activeSectionId;
-//     })[0];
-//
-//     Scope.data.activeModule = activeSection ? activeSection.module || null : null;
-//   }
-// });
-
 router.init({
   '/': function () {
-    Scope.data.activeSectionNode = null;
-    // debugger;
+    Scope.data.activeMenuItemNode = null;
+    router.navigate('/mybit');
+  },
+
+  '/logout': function () {
+    Scope.data.activeMenuItemId = null;
+    Scope.data.activeMenuItemNode = null;
+    Scope.data.popup = null;
+    Scope.data.activeModule = null;
+    Scope.data.sections = null;
+    Scope.data.authService.logout();
+    router.navigate('/mybit');
   },
 
   '/:domain': {
-    '/': function (params) {
+    '/': function (params, parentParams) {
       console.log('domain');
-      router.navigate(params.domain + '/login');
-      // debugger;
+      router.navigate(parentParams.domain + '/login');
     },
 
-    '/login': function (params) {
-      console.log('domain/login', params);
+    '/login': function (params, parentParams) {
+      console.log('domain/login', params, parentParams);
+      Scope.data.currentDomain = parentParams.domain;
       if (Scope.data.authService.notLoggedIn) {
         Scope.data.popup = {
           id: 'login',
           url: 'modules/auth/login-form.js'
         };
-        console.log('popup',Scope.data.popup);
-        // debugger;
       } else {
         Scope.data.popup = null;
-        router.navigate(params.domain + '/dashboard');
+        Scope.data.sections = Scope.import('config/sections.js');
+        router.navigate(Scope.data.currentDomain + '/dashboard');
       }
-      // debugger;
     },
 
     '/:sectionId': function (params, parentParams) {
       if (Scope.data.authService.notLoggedIn) {
         return router.navigate(parentParams.domain + '/login');
       }
-      // debugger;
 
-
-      Scope.data.activeSectionId = params.sectionId;
+      Scope.data.activeMenuItemId = params.sectionId;
 
       const activeSection = Scope.data.sections.filter(function (item) {
-        return item.id === Scope.data.activeSectionId;
+        return item.id === Scope.data.activeMenuItemId;
       })[0];
 
       Scope.data.activeModule = activeSection ? activeSection.module || null : null;
@@ -100,16 +71,16 @@ router.init({
   }
 });
 
-const isActiveSection = function (id, activeSectionId) {
-  const isActive = id === activeSectionId;
+const isActiveSection = function (id, activeMenuItemId) {
+  const isActive = id === activeMenuItemId;
 
   if (isActive) {
-    Scope.data.activeSectionNode = this.node;
+    Scope.data.activeMenuItemNode = this.node;
   }
 
   return isActive;
 };
-isActiveSection.watch = ['section.id', 'data.activeSectionId'];
+isActiveSection.watch = ['section.id', 'data.activeMenuItemId'];
 
 view.config.cleanContainer = true;
 view.init([
@@ -117,9 +88,12 @@ view.init([
     tag: 'nav',
     children: [
       {
-        class: 'logo',
-        tag: 'img',
-        src: 'assets/logos/mybit.png'
+        tag: 'section',
+        children: {
+          class: 'logo',
+          tag: 'img',
+          src: 'assets/logos/mybit.png'
+        }
       },
       {
         tag: 'section',
@@ -127,6 +101,7 @@ view.init([
         children: [
           {
             tag: 'li',
+            animations: animations.menuItem,
 
             $for: {
               data: '<>data.sections.changes',
@@ -136,6 +111,7 @@ view.init([
             children: {
               tag: 'a',
               class: {
+                'menu-item': true,
                 active: isActiveSection
               },
 
@@ -147,52 +123,21 @@ view.init([
               }
             }
           },
-          {
-            tag: 'span',
-            class: 'active-menu-indicator',
-            style: {
-              left: [
-                'data.activeSectionNode',
-                function (node) {
-                  if (!node) {
-                    return '50%';
-                  }
-
-                  const promise = new Promise((resolve) => {
-                    this.rendered.then(() => {
-                      requestAnimationFrame(() => {
-                        resolve(node.getBoundingClientRect().left + 'px');
-                      });
-                    });
-                  });
-
-                  return promise;
-                }
-              ],
-              width: [
-                'data.activeSectionNode',
-                function (node) {
-                  if (!node) {
-                    return 0;
-                  }
-
-                  const promise = new Promise((resolve) => {
-                    this.rendered.then(() => {
-                      requestAnimationFrame(() => {
-                        resolve(node.getBoundingClientRect().width + 'px');
-                      });
-                    });
-                  });
-
-                  return promise;
-                }
-              ]
-            }
-          }
+          activeMenuIndicator.create()
         ]
       },
       {
-        tag: 'section'
+        tag: 'section',
+        children: [
+          {
+            tag: 'a',
+            animations: animations.logout,
+            $if: '<>data.sections',
+            class: 'menu-item',
+            text: 'Logout',
+            href: '#/logout'
+          }
+        ]
       }
     ]
   },
@@ -211,19 +156,7 @@ view.init([
           }
         },
         tag: 'footer',
-        class: {
-          // login: ''
-        },
-        children: [
-          {
-            tag: 'button',
-            text: 'press',
-            on: {
-              click: function () {
-              }
-            }
-          }
-        ]
+        children: []
       }
     ]
   },
@@ -232,6 +165,10 @@ view.init([
     tag: 'section',
     class: 'overlay',
     $if: '<>data.popup',
+    inputs: {
+      domain: '<>data.currentDomain'
+    },
     module: '<>data.popup'
-  }
+  },
+  notificationCenter.container
 ]);

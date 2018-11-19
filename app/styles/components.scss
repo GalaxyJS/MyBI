@@ -1,3 +1,48 @@
+.logo {
+  max-width: 170px;
+  max-height: 45px;
+  display: block;
+}
+
+.menu-item {
+  font-size: 1em;
+  color: #f53f3b;
+  font-weight: 600;
+  display: block;
+  line-height: 20px;
+  padding: 24px 10px 20px;
+  margin: 0 10px;
+  text-decoration: none;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: .9;
+  transition: background-color .1s linear;
+
+  &:hover {
+    background-color: rgba(#fff, .9);
+  }
+
+  &.active {
+    color: #f53f3b;
+    opacity: 1;
+    //padding-bottom: 18px;
+    //border-bottom: 6px solid #f53f3b;
+    text-shadow: 0 1px 5px rgba(#f53f3b, .3);
+  }
+}
+
+.active-menu-indicator {
+  background-color: #f53f3b;
+  box-shadow: 0 2px 16px rgba(#f53f3b, .5);
+  position: fixed;
+  height: 6px;
+  border-radius: 3px;
+  width: 0;
+  top: 62px;
+  left: 0;
+  transition: all .2s ease-in-out;
+}
+
 .section-content {
   max-width: 1000px;
   margin: 45px auto;
@@ -91,5 +136,39 @@
 
   > input, select, textarea {
     color: #444;
+  }
+}
+
+.notification-center {
+  position: fixed;
+  top: 65px;
+  left: calc(50% - 200px);
+  width: 400px;
+  text-align: center;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  > p {
+    display: block;
+    padding: 10px 16px;
+    margin: 15px auto 0;
+    background-color: #888;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 18px;
+    box-shadow: 0 3px 12px rgba(#000, .23);
+    font-size: .9em;
+    line-height: 16px;
+    transform-origin: top center;
+  }
+
+  > .error {
+    background-color: #e85600;
+  }
+
+  > .success {
+    background-color: #85b71a;
   }
 }
