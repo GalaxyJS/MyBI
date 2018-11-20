@@ -33,6 +33,15 @@ button {
     color: rgba(#000, .7);
     background-color: darken(#c8e7d7, 15%);
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+
+    &:hover {
+      border-color: transparent;
+    }
+  }
 }
 
 input, select, textarea {
@@ -47,5 +56,11 @@ input, select, textarea {
 
   &:focus {
     border-color: rgba(#000, .6);
+  }
+
+  &:disabled {
+    background-color: #fff;
+    border-style: dashed;
+    opacity: .6;
   }
 }

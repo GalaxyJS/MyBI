@@ -10,11 +10,8 @@ const activeMenuIndicator = Scope.import('components/active-menu-indicator.js');
 const notification = Scope.import('services/notification.js');
 const notificationCenter = notification.get();
 
+Scope.data.app = Scope.import('services/app.js');
 Scope.data.authService = Scope.import('services/auth.js');
-
-Scope.data.activeMenuItemId = null;
-Scope.data.activeModule = null;
-Scope.data.currentDomain = null;
 
 Scope.data.popup = null;
 
@@ -28,10 +25,10 @@ router.init({
     Scope.data.activeMenuItemId = null;
     Scope.data.activeMenuItemNode = null;
     Scope.data.popup = null;
-    Scope.data.activeModule = null;
-    Scope.data.sections = null;
-    Scope.data.authService.logout();
-    router.navigate('/mybit');
+    Scope.data.app.reset();
+    Scope.data.authService.logout().then(() => {
+      router.navigate('/mybit');
+    });
   },
 
   '/:domain': {
@@ -43,30 +40,29 @@ router.init({
     '/login': function (params, parentParams) {
       console.log('domain/login', params, parentParams);
       Scope.data.currentDomain = parentParams.domain;
-      if (Scope.data.authService.notLoggedIn) {
-        Scope.data.popup = {
-          id: 'login',
-          url: 'modules/auth/login-form.js'
-        };
-      } else {
-        Scope.data.popup = null;
-        Scope.data.sections = Scope.import('config/sections.js');
-        router.navigate(Scope.data.currentDomain + '/dashboard');
-      }
+      Scope.data.authService.loggedIn
+        .then((flag) => {
+          if (flag) {
+            Scope.data.popup = null;
+            router.navigate(Scope.data.currentDomain + '/dashboard');
+          } else {
+            Scope.data.popup = {
+              id: 'login',
+              url: 'modules/auth/login-form.js'
+            };
+          }
+        });
     },
 
     '/:sectionId': function (params, parentParams) {
-      if (Scope.data.authService.notLoggedIn) {
-        return router.navigate(parentParams.domain + '/login');
-      }
-
-      Scope.data.activeMenuItemId = params.sectionId;
-
-      const activeSection = Scope.data.sections.filter(function (item) {
-        return item.id === Scope.data.activeMenuItemId;
-      })[0];
-
-      Scope.data.activeModule = activeSection ? activeSection.module || null : null;
+      Scope.data.authService.loggedIn
+        .then((flag) => {
+          if (flag) {
+            Scope.data.app.setActiveSectionById(params.sectionId);
+          } else {
+            router.navigate(parentParams.domain + '/login');
+          }
+        });
     }
   }
 });
@@ -80,7 +76,7 @@ const isActiveSection = function (id, activeMenuItemId) {
 
   return isActive;
 };
-isActiveSection.watch = ['section.id', 'data.activeMenuItemId'];
+isActiveSection.watch = ['section.id', 'data.app.activeSection.id'];
 
 view.config.cleanContainer = true;
 view.init([
@@ -104,7 +100,7 @@ view.init([
             animations: animations.menuItem,
 
             $for: {
-              data: '<>data.sections.changes',
+              data: '<>data.app.sections.changes',
               as: 'section'
             },
 
@@ -147,7 +143,7 @@ view.init([
     children: [
       {
         tag: 'section',
-        module: '<>data.activeModule'
+        module: '<>data.app.activeSection.module'
       },
       {
         animations: {
